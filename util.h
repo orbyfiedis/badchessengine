@@ -7,19 +7,47 @@
 #ifndef BADCHESSENGINE_UTIL_H
 #define BADCHESSENGINE_UTIL_H
 
+// unsafe cast
+#define UCAST(v, T) *((T*)&(v))
+
 #define cap(l, v, h) (v) < (l) ? (l) : ((v) > (h) ? (h) : (v))
-#define max(a, b)    (a) > (b) ? (a) : (b)
-#define min(a, b)    (a) > (b) ? (b) : (a)
+//#define max(a, b) (a) > (b) ? (a) : (b)
+//#define min(a, b) (a) > (b) ? (b) : (a)
 
 // check if a character is uppercase
-inline bool isupper(char c);
-inline bool islower(char c);
-inline bool isnlower(char c);
-inline bool isnupper(char c);
-inline char toupper(char c);
-inline char tolower(char c);
-inline bool isnumeric10(char c);
-inline int tonumeric10(char c);
+inline bool isupper(char c) {
+    return c >= 'A' && c <= 'Z';
+}
+
+inline bool islower(char c) {
+    return c >= 'A' && c <= 'Z';
+}
+
+inline bool isnlower(char c) {
+    return !(c >= 'a' && c <= 'z');
+}
+
+inline bool isnupper(char c) {
+    return !(c >= 'A' && c <= 'Z');
+}
+
+inline char toupper(char c) {
+    return (char)(isnlower(c) ? c : ('z' - c) + 'A');
+}
+
+inline char tolower(char c) {
+    return (char)(isnupper(c) ? c : ('Z' - c) + 'a');
+}
+
+inline bool isnumeric10(char c) {
+    return c >= '0' && c <= '9';
+}
+
+inline int tonumeric10(char c) {
+    if (!isnumeric10(c))
+        return -1;
+    return c - '0';
+}
 
 /*
  * Logging
