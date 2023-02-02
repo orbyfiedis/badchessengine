@@ -13,7 +13,6 @@
  */
 
 void dlog(P_IN, const char *fmt, ...) {
-//#ifdef DLOG_ENABLE
     // format prefix with code pos info
     printf(DLOG_PRE_FMT, pos.file, pos.line, pos.func);
 
@@ -22,5 +21,4 @@ void dlog(P_IN, const char *fmt, ...) {
     va_start(va,fmt);
     printf(fmt, va);
     va_end(va);
-//#endif
 }

@@ -10,8 +10,10 @@
 #include "util.h"
 
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #include <string>
+#include <functional>
 
 namespace arg {
 
@@ -51,31 +53,31 @@ public:
     // peek at the current and surrounding positions
     [[nodiscard]] inline char peek(int off) const;
 
+    // collects a string into a buffer
+    // until the condition isn't met anymore
+    void collect(std::function<bool(char)> pred,
+                 str_buf *buf);
+    char* collect_cstr(std::function<bool(char)> pred);
+    std::string collect_str(std::function<bool(char)> pred);
 };
 
 /* Errno */
 #define EARGNOTYPE 1
+#define ENOSUCHARG 2
 
 // arg parser functions
 class Parser;
-#define IARGP(T) int parse_from_str(arg::Parser *parser, arg::StringReader *reader, T *out)
-#define IARGS(T) int on_switch(arg::Parser *parser, arg::StringReader *reader, T *out)
-
-// unimplemented arg parsers //
-template<typename T>
-int parse_from_str(arg::Parser *parser, arg::StringReader *reader, T *out);
-template<typename T>
-int on_switch(arg::Parser *parser, arg::StringReader *reader, T *out);
 
 /// @brief Describes a registered option.
 template<typename T>
 struct Option {
+
     Option(
             std::string name,
             T *out,
             char ch,
             bool sw
-            ) : name(name), out(out), ch(ch), sw(sw) { }
+            ) : name(std::move(name)), out(out), ch(ch), sw(sw) { }
 
     // the name of this option
     std::string name;
@@ -86,15 +88,26 @@ struct Option {
     // switch flag
     bool sw = false;
 
-    /// @brief Calls the appropriate parser function.
-    virtual int parse(Parser *parser, StringReader *reader) {
-        return parse_from_str<T>(parser, reader, (T *) out);
+    /// @brief Parses a full value from the string.
+    virtual int parse_from_str(Parser *parser, StringReader *reader) {
+        return -EARGNOTYPE;
     }
-    /// @brief Calls the appropriate switch function.
+
+    /// @brief Parses a full value from the string.
+    /// @brief Unlike parse_from_str, this is only called when parsing a value from a single character flag.
+    virtual int parse_from_str_compact(Parser *parser, StringReader *reader) {
+        return parse_from_str(parser, reader);
+    }
+
+    /// @brief Sets the switch values.
     virtual int on_switch(Parser *parser, StringReader *reader) {
-        return on_switch<T>(parser, reader, (T *) out);
+        return -EARGNOTYPE;
     }
+
 };
+
+#define IARGP(T) template<> int Option<T>::parse_from_str(arg::Parser *parser, arg::StringReader *reader)
+#define IARGS(T) template<> int Option<T>::on_switch(arg::Parser *parser, arg::StringReader *reader)
 
 // allocate a new pointer
 // warning: this is not freed up automatically
