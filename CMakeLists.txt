@@ -5,5 +5,5 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(lib)
 
-add_executable(badchessengine main.cpp chess.cpp chess.h)
+add_executable(badchessengine main.cpp chess.cpp chess.h arg.cpp arg.h util.cpp util.h)
 target_link_libraries(badchessengine ${CMAKE_SOURCE_DIR}/lib/libSDL2.a)
